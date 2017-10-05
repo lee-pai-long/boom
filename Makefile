@@ -1,13 +1,5 @@
 # TODO: Switch to pyenv.
 
-HERE = $(shell pwd)
-VENV = $(HERE)/venv
-BIN = $(VENV)/bin
-PYTHON = $(BIN)/python
-
-INSTALL = $(BIN)/pip install --no-deps
-VTENV_OPTS ?= --distribute
-
 # List of code tags to search for.
 TODO_TAGS = TODO|FIXME|CHANGED|XXX|REVIEW|BUG|REFACTOR|IDEA|WARNING
 
@@ -54,23 +46,3 @@ todo: ## Show todo list.
 					, TYPE, MESSAGE, FILENAME, LINE \
 				}' \
 		{} \; | column -s '|' -t
-
-.PHONY: all test docs build_extras
-
-all: build
-
-$(PYTHON):
-	virtualenv $(VTENV_OPTS) $(VENV)
-
-build: $(PYTHON)
-	$(PYTHON) setup.py develop
-
-clean:
-	rm -rf $(VENV)
-
-test_dependencies:
-	$(BIN)/pip install flake8 tox unittest2
-
-test: build test_dependencies
-	$(BIN)/flake8 boom
-	$(BIN)/tox
