@@ -1,4 +1,6 @@
 .. TODO: Change badges.
+.. TODO: Add editor config.
+.. TODO: Add setup.cfg.
 **Boom!** is a simple command line tool to send some load to a web app.
 
 .. image:: https://img.shields.io/coveralls/tarekziade/boom.svg

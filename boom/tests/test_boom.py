@@ -1,3 +1,5 @@
+# TODO: Add test for insecure ssl.
+
 import unittest2 as unittest
 import subprocess
 import sys
