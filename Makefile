@@ -29,6 +29,7 @@ todo: ## Show todo list.
 	@find . \
 		-type f \
 		-not -path "./.git/*" \
+		-not -path "./*.egg-info/*" \
 		-exec \
 			awk '/[ ]($(TODO_TAGS)):/ \
 				{ \
