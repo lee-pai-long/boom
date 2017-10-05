@@ -1,4 +1,4 @@
-# TODO: Switch to pyenv
+# TODO: Switch to pyenv.
 
 HERE = $(shell pwd)
 VENV = $(HERE)/venv

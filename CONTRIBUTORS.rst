@@ -1,4 +1,4 @@
-.. TODO: Add self
+.. TODO: Add self.
 
 Owner
 =====
