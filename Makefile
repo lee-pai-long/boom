@@ -1,5 +1,4 @@
 # TODO: Add todo task.
-# TODO: Add help task.
 # TODO: Switch to pyenv
 
 HERE = $(shell pwd)
@@ -9,6 +8,18 @@ PYTHON = $(BIN)/python
 
 INSTALL = $(BIN)/pip install --no-deps
 VTENV_OPTS ?= --distribute
+
+# Tasks
+# -----
+
+.PHONY: help
+help: ## Show this message.
+
+	@echo "usage: make [task]" \
+	&& echo "available tasks:" \
+	&& awk \
+		'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / \
+		{printf "$(CYAN)%-8s$(WHITE) : %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 .PHONY: all test docs build_extras
 
