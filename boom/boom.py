@@ -98,6 +98,7 @@ def calc_stats(results):
         RunStats(count, results.total_time, rps, avg, min_, max_, amp, stdev)
     )
 
+
 # TODO: Switch to PrettyTable.
 def print_stats(results):
     stats = calc_stats(results)
@@ -159,6 +160,7 @@ def print_json(results):
     stats = calc_stats(results)
     print(json.dumps(stats._asdict()))
 
+
 # TODO: Add support for insecure SSL (requests verify=False).
 def onecall(method, url, results, **options):
     """Performs a single HTTP call and puts the result into the
@@ -194,6 +196,7 @@ def onecall(method, url, results, **options):
     finally:
         results.incr()
 
+
 # TODO: Add support for insecure SSL (requests verify=False).
 def run(
     url, num=1, duration=None, method='GET', data=None, ct='text/plain',
@@ -211,7 +214,10 @@ def run(
         data = resolve_name(callable)
 
     method = getattr(requests, method.lower())
-    options = {'headers': headers}
+    options = {
+        'headers': headers,
+        'verify': False
+    }
 
     if pre_hook is not None:
         options['pre_hook'] = resolve_name(pre_hook)
@@ -280,11 +286,12 @@ def resolve(url):
                                  parts.fragment or '')),
             original, host)
 
+
 # TODO: Add support for insecure SSL (requests verify=False).
 def load(url, requests, concurrency, duration, method, data, ct, auth,
          headers=None, pre_hook=None, post_hook=None, quiet=False):
     if not quiet:
-        print_server_info(url, method, headers=headers)
+        # print_server_info(url, method, headers=headers)
 
         if requests is not None:
             print('Running %d queries - concurrency %d' % (requests,
@@ -301,6 +308,7 @@ def load(url, requests, concurrency, duration, method, data, ct, auth,
     finally:
         if not quiet:
             print(' Done')
+
 
 # TODO: Put args in a list.
 def main():
