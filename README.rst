@@ -3,6 +3,7 @@
 .. TODO: Add setup.cfg.
 .. IDEA: Add support for loading data from json file.
 .. TODO: Update README with new option --insecure.
+.. TODO: Add CONTRIBUTING to README.
 
 **Boom!** is a simple command line tool to send some load to a web app.
 
