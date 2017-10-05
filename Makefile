@@ -42,6 +42,7 @@ todo: ## Show todo list.
 				{ \
 					gsub("# ","", $$0); \
 					gsub("// ","", $$0); \
+					gsub(/\.\./,"", $$0); \
 					gsub(/^[ \t]+/, "", $$0); \
 					gsub(/:/, "", $$0); \
 					gsub(/\.\//,"", FILENAME); \
