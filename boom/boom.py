@@ -256,7 +256,7 @@ def run(url, num=1, duration=None, method='GET', data=None, ct='text/plain',
     return res
 
 
-# FIXME: Doesn't rely on /etc/hosts file.
+# FIXME: Doesn't seems to work with /etc/hosts files?
 def resolve(url):
     parts = parse_url(url)
 

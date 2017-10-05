@@ -1,6 +1,9 @@
 .. TODO: Change badges.
 .. TODO: Add editor config.
 .. TODO: Add setup.cfg.
+.. IDEA: Add support for loading data from json file.
+.. TODO: Update README with new option --insecure.
+
 **Boom!** is a simple command line tool to send some load to a web app.
 
 .. image:: https://img.shields.io/coveralls/tarekziade/boom.svg

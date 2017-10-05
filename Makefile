@@ -1,4 +1,5 @@
 # TODO: Switch to pyenv.
+# TODO: Add pylint or codeclimate.
 
 # List of code tags to search for.
 TODO_TAGS = TODO|FIXME|CHANGED|XXX|REVIEW|BUG|REFACTOR|IDEA|WARNING
