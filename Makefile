@@ -30,6 +30,7 @@ todo: ## Show todo list.
 		-type f \
 		-not -path "./.git/*" \
 		-not -path "./*.egg-info/*" \
+		-not -path "./.tox/*" \
 		-exec \
 			awk '/[ ]($(TODO_TAGS)):/ \
 				{ \
