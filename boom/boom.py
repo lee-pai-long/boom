@@ -197,15 +197,15 @@ def onecall(method, url, results, **options):
         results.incr()
 
 
-def run(url, num=1, duration=None, method='GET', data=None, ct='text/plain',
-        auth=None, concurrency=1, headers=None, pre_hook=None, post_hook=None,
-        quiet=False, insecure=False):
+def run(url, num=1, duration=None, method='GET', data=None, auth=None,
+        content_type='text/plain', concurrency=1, headers=None, pre_hook=None,
+        post_hook=None, quiet=False, insecure=False):
 
     if headers is None:
         headers = {}
 
     if 'content-type' not in headers:
-        headers['Content-Type'] = ct
+        headers['Content-Type'] = content_type
 
     if data is not None and data.startswith('py:'):
         callable = data[len('py:'):]
@@ -285,9 +285,8 @@ def resolve(url):
             original, host)
 
 
-# TODO: Rename ct to content-type.
-def load(url, requests, concurrency, duration, method, data, ct, auth,
-         headers=None, pre_hook=None, post_hook=None, quiet=False,
+def load(url, requests, concurrency, duration, method, data, content_type,
+         auth, headers=None, pre_hook=None, post_hook=None, quiet=False,
          insecure=False):
     if not quiet:
         print_server_info(url, method, headers=headers, verify=not insecure)
@@ -301,9 +300,9 @@ def load(url, requests, concurrency, duration, method, data, ct, auth,
 
         sys.stdout.write('Starting the load')
     try:
-        return run(url, requests, duration, method,
-                   data, ct, auth, concurrency, headers,
-                   pre_hook, post_hook, quiet=quiet, insecure=insecure)
+        return run(url, requests, duration, method, data, content_type, auth,
+                   concurrency, headers, pre_hook, post_hook,
+                   quiet=quiet, insecure=insecure)
     finally:
         if not quiet:
             print(' Done')
