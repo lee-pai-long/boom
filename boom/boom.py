@@ -133,11 +133,12 @@ def print_stats(results):
     print('BSI: Boom Speed Index')
 
 
-def print_server_info(url, method, headers=None):
-    res = requests.head(url)
+def print_server_info(url, method, headers=None, **options):
+    res = requests.head(url, **options)
     print(
         'Server Software: %s' %
-        res.headers.get('server', 'Unknown'))
+        res.headers.get('server', 'Unknown')
+    )
     print('Running %s %s' % (method, url))
 
     if headers:
@@ -161,7 +162,6 @@ def print_json(results):
     print(json.dumps(stats._asdict()))
 
 
-# TODO: Add support for insecure SSL (requests verify=False).
 def onecall(method, url, results, **options):
     """Performs a single HTTP call and puts the result into the
        status_code_counter.
@@ -197,11 +197,9 @@ def onecall(method, url, results, **options):
         results.incr()
 
 
-# TODO: Add support for insecure SSL (requests verify=False).
-def run(
-    url, num=1, duration=None, method='GET', data=None, ct='text/plain',
+def run(url, num=1, duration=None, method='GET', data=None, ct='text/plain',
         auth=None, concurrency=1, headers=None, pre_hook=None, post_hook=None,
-        quiet=False):
+        quiet=False, insecure=False):
 
     if headers is None:
         headers = {}
@@ -216,7 +214,7 @@ def run(
     method = getattr(requests, method.lower())
     options = {
         'headers': headers,
-        'verify': False
+        'verify': not insecure
     }
 
     if pre_hook is not None:
@@ -287,11 +285,12 @@ def resolve(url):
             original, host)
 
 
-# TODO: Add support for insecure SSL (requests verify=False).
+# TODO: Rename ct to content-type.
 def load(url, requests, concurrency, duration, method, data, ct, auth,
-         headers=None, pre_hook=None, post_hook=None, quiet=False):
+         headers=None, pre_hook=None, post_hook=None, quiet=False,
+         insecure=False):
     if not quiet:
-        # print_server_info(url, method, headers=headers)
+        print_server_info(url, method, headers=headers, verify=not insecure)
 
         if requests is not None:
             print('Running %d queries - concurrency %d' % (requests,
@@ -304,7 +303,7 @@ def load(url, requests, concurrency, duration, method, data, ct, auth,
     try:
         return run(url, requests, duration, method,
                    data, ct, auth, concurrency, headers,
-                   pre_hook, post_hook, quiet=quiet)
+                   pre_hook, post_hook, quiet=quiet, insecure=insecure)
     finally:
         if not quiet:
             print(' Done')
@@ -375,6 +374,13 @@ def main():
                        type=int)
 
     parser.add_argument('url', help='URL to hit', nargs='?')
+
+    parser.add_argument(
+        '-k ',
+        '--insecure',
+        help='Allow insecure SSL connections',
+        action='store_true'
+    )
     args = parser.parse_args()
 
     if args.version:
@@ -420,11 +426,12 @@ def main():
         headers['Host'] = original
 
     try:
-        res = load(
-            url, args.requests, args.concurrency, args.duration,
-            args.method, args.data, args.content_type, args.auth,
-            headers=headers, pre_hook=args.pre_hook,
-            post_hook=args.post_hook, quiet=(args.json_output or args.quiet))
+        res = load(url, args.requests, args.concurrency, args.duration,
+                   args.method, args.data, args.content_type, args.auth,
+                   headers=headers, pre_hook=args.pre_hook,
+                   post_hook=args.post_hook,
+                   quiet=(args.json_output or args.quiet),
+                   insecure=args.insecure)
     except RequestException as e:
         print_errors((e, ))
         sys.exit(1)
