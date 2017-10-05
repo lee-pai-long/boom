@@ -98,7 +98,7 @@ def calc_stats(results):
         RunStats(count, results.total_time, rps, avg, min_, max_, amp, stdev)
     )
 
-
+# TODO: Switch to PrettyTable
 def print_stats(results):
     stats = calc_stats(results)
     rps = stats.rps
@@ -159,7 +159,7 @@ def print_json(results):
     stats = calc_stats(results)
     print(json.dumps(stats._asdict()))
 
-
+# TODO: Add support for insecure SSL (requests verify=False)
 def onecall(method, url, results, **options):
     """Performs a single HTTP call and puts the result into the
        status_code_counter.
@@ -194,7 +194,7 @@ def onecall(method, url, results, **options):
     finally:
         results.incr()
 
-
+# TODO: Add support for insecure SSL (requests verify=False)
 def run(
     url, num=1, duration=None, method='GET', data=None, ct='text/plain',
         auth=None, concurrency=1, headers=None, pre_hook=None, post_hook=None,
@@ -252,6 +252,7 @@ def run(
     return res
 
 
+# FIXME: Doesn't rely on /etc/hosts file
 def resolve(url):
     parts = parse_url(url)
 
@@ -279,7 +280,7 @@ def resolve(url):
                                  parts.fragment or '')),
             original, host)
 
-
+# TODO: Add support for insecure SSL (requests verify=False)
 def load(url, requests, concurrency, duration, method, data, ct, auth,
          headers=None, pre_hook=None, post_hook=None, quiet=False):
     if not quiet:
@@ -301,7 +302,7 @@ def load(url, requests, concurrency, duration, method, data, ct, auth,
         if not quiet:
             print(' Done')
 
-
+# TODO: Put args in a list
 def main():
     parser = argparse.ArgumentParser(
         description='Simple HTTP Load runner.')

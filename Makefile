@@ -1,3 +1,7 @@
+# TODO: Add todo task.
+# TODO: Add help task.
+# TODO: Switch to pyenv
+
 HERE = $(shell pwd)
 VENV = $(HERE)/venv
 BIN = $(VENV)/bin
@@ -25,4 +29,3 @@ test_dependencies:
 test: build test_dependencies
 	$(BIN)/flake8 boom
 	$(BIN)/tox
-

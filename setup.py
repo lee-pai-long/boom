@@ -1,3 +1,7 @@
+# TODO: Drop py36 support,
+# see: https://goo.gl/w5oaS6 and https://goo.gl/Mmihta
+# TODO:! Create requirements directory.
+
 from setuptools import setup, find_packages
 from boom import __version__
 import sys

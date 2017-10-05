@@ -1,11 +1,4 @@
-
-
-**ATTENTION Boom is going to be replaced by Boom2 and then deprecated**
-
-Follow the progress and join the party here: https://github.com/tarekziade/boom2
-
-**ATTENTION**
-
+.. TODO: Change badges.
 **Boom!** is a simple command line tool to send some load to a web app.
 
 .. image:: https://img.shields.io/coveralls/tarekziade/boom.svg
