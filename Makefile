@@ -1,8 +1,14 @@
-# TODO: Switch to pyenv.
 # TODO: Add pylint and/or codeclimate.
 
+# Switch to bash instead of sh
+SHELL := /bin/bash
+
+# Project constants
+# -----------------
+APP_NAME := boom
+
 # List of code tags to search for.
-TODO_TAGS = TODO|FIXME|CHANGED|XXX|REVIEW|BUG|REFACTOR|IDEA|WARNING
+TODO_TAGS := TODO|FIXME|CHANGED|XXX|REVIEW|BUG|REFACTOR|IDEA|WARNING
 
 # Colors.
 WHITE  = \033[0m
@@ -11,6 +17,14 @@ GREEN  = \033[32m
 YELLOW = \033[33m
 BLUE   = \033[34m
 CYAN   = \033[36m
+
+# Python shortcuts.
+PYENV_ROOT 			?= $$HOME/.pyenv
+PYENV_INSTALLER		:= https://goo.gl/YnAzjE
+PYTHON_VERSION		:= $$(cat .python-version)
+REQUIREMENTS	 	:= requirements-test.txt
+BASH_RC 			?= $$HOME/.bash_profile
+PIP					 = $(PYENV_ROOT)/versions/$(APP_NAME)/bin/pip
 
 # Tasks
 # -----
@@ -49,3 +63,32 @@ todo: ## Show todo list.
 					, TYPE, MESSAGE, FILENAME, LINE \
 				}' \
 		{} \; | column -s '|' -t
+
+.PHONY: pyenv
+pyenv: ## Install pyenv(python version manager).
+
+	@which pyenv &> /dev/null \
+	|| (curl -L https://goo.gl/YnAzjE | PYENV_ROOT=$(PYENV_ROOT) bash \
+		&& echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> $(BASH_RC) \
+		&& echo 'eval "$(pyenv init -)"' >> $(BASH_RC) \
+		&& echo 'eval "$(pyenv virtualenv-init -)"' >> $(BASH_RC) \
+		&& source $(BASH_RC))
+
+.PHONY: python
+python: pyenv ## Install python version define in .python-version.
+
+	@pyenv install -s
+
+.PHONY: venv
+venv: python ## Create a local virtualenv for the project.
+
+	@pyenv virtualenvs | grep $(APP_NAME) \
+	|| (pyenv virtualenv $(PYTHON_VERSION) $(APP_NAME) \
+		&& $(PIP) install \
+				--requirement $(REQUIREMENTS) \
+				--upgrade )
+
+.PHONY: dev
+dev: venv ## Install boom locally (inside the virtualenv).
+
+	@$(PIP) install --no-deps --editable .
