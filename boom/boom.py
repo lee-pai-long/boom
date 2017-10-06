@@ -342,7 +342,7 @@ def main():
                               "to a callable which will be executed before "
                               "doing a request for example: "
                               "pre_hook(method, url, options). "
-                              "It must return a tupple of parameters given in "
+                              "It must return a tuple of parameters given in "
                               "function definition"),
                         type=str)
 

@@ -116,7 +116,7 @@ Boom! has more options::
       --pre-hook PRE_HOOK   Python module path (eg: mymodule.pre_hook) to a
                             callable which will be executed before doing a request
                             for example: pre_hook(method, url, options). It must
-                            return a tupple of parameters given in function
+                            return a tuple of parameters given in function
                             definition
       --post-hook POST_HOOK
                             Python module path (eg: mymodule.post_hook) to a
