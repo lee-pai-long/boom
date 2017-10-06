@@ -29,6 +29,135 @@ monkey.patch_all()
 logger = logging.getLogger('boom')
 _VERBS = ('GET', 'POST', 'DELETE', 'PUT', 'HEAD', 'OPTIONS')
 _DATA_VERBS = ('POST', 'PUT')
+ARGS = [
+    {
+        'flags': ['--version'],
+        'options': {
+            'help': 'Displays version and exits.',
+            'action': 'store_true'
+        }
+    },
+    {
+        'flags': ['-m', '--method'],
+        'options': {
+            'help': "One of {verbs}.".format(verbs=', '.join(_VERBS)),
+            'type': str,
+            'default': 'GET',
+            'choices': _VERBS
+        }
+    },
+    {
+        'flags': ['--content-type'],
+        'options': {
+            'help': 'Content-Type to use.',
+            'type': str,
+            'default': 'text/plain'
+        }
+    },
+    {
+        'flags': ['-D', '--data'],
+        'options': {
+            'help': 'Data. Prefixed by "py:" to point a python callable.',
+            'type': str
+        }
+    },
+    {
+        # REVIEW: Change this to clients.
+        'flags': ['-c', '--concurrency'],
+        'options': {
+            'help': 'Number of client ot use',
+            'type': int,
+            'default': 1
+        }
+    },
+    {
+        'flags': ['-a', '--auth'],
+        'options': {
+            'help': 'Basic authentication user:password',
+            'type': str
+        }
+    },
+    {
+        'flags': ['-H', '--header'],
+        'options': {
+            'help': 'Custom header. name:value',
+            'action': 'append',
+            'type': str
+        }
+    },
+    {
+        'flags': ['--pre-hook'],
+        'options': {
+            'help': (
+                'Python module path (eg: mymodule.pre_hook) '
+                'to a callable which will be executed before '
+                'doing a request for example: '
+                'pre_hook(method, url, options). '
+                'It must return a tuple of parameters given in '
+                'function definition'
+            ),
+            'type': str
+        }
+    },
+    {
+        'flags': ['--post-hook'],
+        'options': {
+            'help': (
+                'Python module path (eg: mymodule.post_hook) '
+                'to a callable which will be executed after '
+                'a request is done for example: '
+                'eg. post_hook(response). '
+                'It must return a given response parameter or '
+                'raise an `boom.boom.RequestException` for '
+                'failed request.'
+            ),
+            'type': str
+        }
+    },
+    {
+        'flags': ['--json-output'],
+        'options': {
+            'help': 'Prints the results in JSON.',
+            'action': 'store_true'
+        }
+    },
+    {
+        'flags': ['-q', '--quiet'],
+        'options': {
+            'help': "Don't display progress bar",
+            'action': 'store_true',
+        }
+    },
+    {
+        'flags': ['-n', '--requests'],
+        'options': {
+            'help': 'Number of requests',
+            'type': int
+        }
+    },
+    {
+        'flags': ['-d', '--duration'],
+        'options': {
+            'help': 'Duration in seconds.',
+            'type': int
+        }
+    },
+    {
+        'flags': ['url'],
+        'options': {
+            'help': 'URL to hit.',
+            # REVIEW: Why nargs ?, there is no default...
+            'nargs': '?'
+        }
+    },
+    {
+        'flags': ['-k ', '--insecure'],
+        'options': {
+            'help': 'Allow insecure SSL connections',
+            'action': 'store_true',
+        }
+    }
+]
 
 
 class RunResults(object):
@@ -62,7 +191,7 @@ class RunResults(object):
             sys.stdout.write('.')
             sys.stdout.flush()
 
-
+# REVIEW: Put elements in one line each.
 RunStats = namedtuple(
     'RunStats', ['count', 'total_time', 'rps', 'avg', 'min',
                  'max', 'amp', 'stdev'])
@@ -91,7 +220,9 @@ def calc_stats(results):
         avg = sum(all_res) / len(all_res)
         max_ = max(all_res)
         min_ = min(all_res)
+        # REVIEW: No need to reuse max/min here, use max_ and min_.
         amp = max(all_res) - min(all_res)
+        # REVIEW: Rename x to res for readability.
         stdev = math.sqrt(sum((x-avg)**2 for x in all_res) / count)
 
     return (
@@ -207,6 +338,7 @@ def run(url, num=1, duration=None, method='GET', data=None, auth=None,
     if 'content-type' not in headers:
         headers['Content-Type'] = content_type
 
+    # REVIEW: callable is error prone because a build-in of same name exists.
     if data is not None and data.startswith('py:'):
         callable = data[len('py:'):]
         data = resolve_name(callable)
@@ -234,6 +366,7 @@ def run(url, num=1, duration=None, method='GET', data=None, auth=None,
     jobs = None
     res = RunResults(num, quiet)
 
+    # REVIEW: Rewrite this with suppress(https://goo.gl/d1hguZ)
     try:
         if num is not None:
             jobs = [pool.spawn(onecall, method, url, res, **options)
@@ -308,96 +441,58 @@ def load(url, requests, concurrency, duration, method, data, content_type,
             print(' Done')
 
 
-# TODO: Put args in a list.
-def main():
+def _split(header):
+    header = header.split(':')
+    if len(header) != 2:
+        raise ValueError(
+            "A header must be of the form name:value, got '{}'".format(header)
+        )
+    return header
+
+
+def cli():
+    """Parse arguments an return a parser object."""
+
+    # Parsing arguments from cli.
     parser = argparse.ArgumentParser(
-        description='Simple HTTP Load runner.')
-
-    parser.add_argument(
-        '--version', action='store_true', default=False,
-        help='Displays version and exits.')
-
-    parser.add_argument('-m', '--method', help='HTTP Method',
-                        type=str, default='GET', choices=_VERBS)
-
-    parser.add_argument('--content-type', help='Content-Type',
-                        type=str, default='text/plain')
-
-    parser.add_argument('-D', '--data',
-                        help=('Data. Prefixed by "py:" to point '
-                              'a python callable.'),
-                        type=str)
-
-    parser.add_argument('-c', '--concurrency', help='Concurrency',
-                        type=int, default=1)
-
-    parser.add_argument('-a', '--auth',
-                        help='Basic authentication user:password', type=str)
-
-    parser.add_argument('--header', help='Custom header. name:value',
-                        type=str, action='append')
-
-    parser.add_argument('--pre-hook',
-                        help=("Python module path (eg: mymodule.pre_hook) "
-                              "to a callable which will be executed before "
-                              "doing a request for example: "
-                              "pre_hook(method, url, options). "
-                              "It must return a tuple of parameters given in "
-                              "function definition"),
-                        type=str)
-
-    parser.add_argument('--post-hook',
-                        help=("Python module path (eg: mymodule.post_hook) "
-                              "to a callable which will be executed after "
-                              "a request is done for example: "
-                              "eg. post_hook(response). "
-                              "It must return a given response parameter or "
-                              "raise an `boom.boom.RequestException` for "
-                              "failed request."),
-                        type=str)
-
-    parser.add_argument('--json-output',
-                        help='Prints the results in JSON instead of the '
-                             'default format',
-                        action='store_true')
-
-    parser.add_argument('-q', '--quiet', help="Don't display progress bar",
-                        action='store_true')
-
-    group = parser.add_mutually_exclusive_group()
-
-    group.add_argument('-n', '--requests', help='Number of requests',
-                       type=int)
-
-    group.add_argument('-d', '--duration', help='Duration in seconds',
-                       type=int)
-
-    parser.add_argument('url', help='URL to hit', nargs='?')
-
-    parser.add_argument(
-        '-k ',
-        '--insecure',
-        help='Allow insecure SSL connections',
-        action='store_true'
+        description='Simple HTTP Load runner.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    args = parser.parse_args()
+    for argument in ARGS:
+        parser.add_argument(*argument['flags'], **argument['options'])
 
+    # Validate arguments.
+    # TODO: print usage to stderr.
+    args = parser.parse_args()
     if args.version:
         print(__version__)
-        sys.exit(0)
-
+        sys.exit(1)
     if args.url is None:
         print('You need to provide an URL.')
         parser.print_usage()
-        sys.exit(0)
-
+        sys.exit(1)
     if args.data is not None and args.method not in _DATA_VERBS:
         print("You can't provide data with %r" % args.method)
         parser.print_usage()
-        sys.exit(0)
-
+        sys.exit(1)
     if args.requests is None and args.duration is None:
         args.requests = 1
+    if args.header is None:
+        args.headers = {}
+    else:
+        try:
+            args.headers = dict([_split(header) for header in args.header])
+        except ValueError as e:
+            print(str(e))
+            parser.print_usage()
+
+    # Return arguments.
+    return args
+
+
+def main():
+
+    args = cli()
 
     try:
         url, original, resolved = resolve(args.url)
@@ -406,28 +501,13 @@ def main():
                       (args.url, str(e)),))
         sys.exit(1)
 
-    def _split(header):
-        header = header.split(':')
-
-        if len(header) != 2:
-            print("A header must be of the form name:value")
-            parser.print_usage()
-            sys.exit(0)
-
-        return header
-
-    if args.header is None:
-        headers = {}
-    else:
-        headers = dict([_split(header) for header in args.header])
-
-    if original != resolved and 'Host' not in headers:
-        headers['Host'] = original
+    if original != resolved and 'Host' not in args.headers:
+        args.headers['Host'] = original
 
     try:
         res = load(url, args.requests, args.concurrency, args.duration,
                    args.method, args.data, args.content_type, args.auth,
-                   headers=headers, pre_hook=args.pre_hook,
+                   headers=args.headers, pre_hook=args.pre_hook,
                    post_hook=args.post_hook,
                    quiet=(args.json_output or args.quiet),
                    insecure=args.insecure)
@@ -442,7 +522,6 @@ def main():
         print_json(res)
 
     logger.info('Bye!')
-
 
 if __name__ == '__main__':
     main()
