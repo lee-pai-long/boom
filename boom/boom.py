@@ -300,8 +300,8 @@ def load(url, requests, concurrency, duration, method, data, content_type,
 
         sys.stdout.write('Starting the load')
     try:
-        return run(url, requests, duration, method, data, content_type, auth,
-                   concurrency, headers, pre_hook, post_hook,
+        return run(url, requests, duration, method, data, auth,
+                   content_type, concurrency, headers, pre_hook, post_hook,
                    quiet=quiet, insecure=insecure)
     finally:
         if not quiet:
