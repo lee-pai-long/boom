@@ -68,7 +68,20 @@ todo: ## Show todo list.
 pyenv: ## Install pyenv(python version manager).
 
 	@which pyenv &> /dev/null \
-	|| (curl -L https://goo.gl/YnAzjE | PYENV_ROOT=$(PYENV_ROOT) bash \
+	|| (sudo apt-get install -y \
+			libssl-dev \
+			zlib1g-dev \
+			libbz2-dev \
+			libreadline-dev \
+			libsqlite3-dev \
+			wget \
+			curl \
+			llvm \
+			libncurses5-dev \
+			libncursesw5-dev \
+			xz-utils \
+			tk-dev \
+		&& curl -L https://goo.gl/YnAzjE | PYENV_ROOT=$(PYENV_ROOT) bash \
 		&& echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> $(BASH_RC) \
 		&& echo 'eval "$(pyenv init -)"' >> $(BASH_RC) \
 		&& echo 'eval "$(pyenv virtualenv-init -)"' >> $(BASH_RC) \
