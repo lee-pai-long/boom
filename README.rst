@@ -2,7 +2,6 @@
 .. TODO: Add editor config.
 .. TODO: Add setup.cfg.
 .. IDEA: Add support for loading data from json file.
-.. TODO: Update README with new option --insecure.
 .. TODO: Add CONTRIBUTING to README.
 
 **Boom!** is a simple command line tool to send some load to a web app.
@@ -131,7 +130,7 @@ Boom! has more options::
                             Number of requests
       -d DURATION, --duration DURATION
                             Duration in seconds
-
+      -k , --insecure       Allow insecure SSL connections
 
 Calling from Python code
 ========================
