@@ -92,3 +92,9 @@ venv: python ## Create a local virtualenv for the project.
 dev: venv ## Install boom locally (inside the virtualenv).
 
 	@$(PIP) install --no-deps --editable .
+
+.PHONY: clean
+clean: ## Remove local virtalenv.
+
+	@pyenv deactivate &> /dev/null
+	pyenv uninstall $(APP_NAME)
