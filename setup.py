@@ -1,7 +1,3 @@
-# TODO: Drop py36 support,
-# see: https://goo.gl/w5oaS6 and https://goo.gl/Mmihta
-# TODO: Create requirements directory.
-
 from setuptools import setup, find_packages
 from boom import __version__
 import sys
@@ -18,15 +14,16 @@ for file_ in ('README', 'CHANGES', 'CONTRIBUTORS'):
         description += f.read() + '\n\n'
 
 
-classifiers = ["Development Status :: 5 - Production/Stable",
-               "License :: OSI Approved :: Apache Software License",
-               "Programming Language :: Python",
-               "Programming Language :: Python :: 2.6",
-               "Programming Language :: Python :: 2.7",
-               "Programming Language :: Python :: 3.3",
-               "Programming Language :: Python :: 3.4",
-               "Programming Language :: Python :: 3.5",
-               "Programming Language :: Python :: 3.6"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 2.6",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3.3",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
+]
 
 setup(name='boom',
       version=__version__,
