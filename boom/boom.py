@@ -450,7 +450,7 @@ def _split(header):
     return header
 
 
-def cli():
+def cli(arguments=ARGS):
     """Parse arguments an return a parser object."""
 
     # Parsing arguments from cli.
@@ -458,7 +458,7 @@ def cli():
         description='Simple HTTP Load runner.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    for argument in ARGS:
+    for argument in arguments:
         parser.add_argument(*argument['flags'], **argument['options'])
 
     # Validate arguments.
