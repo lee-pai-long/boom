@@ -11,7 +11,9 @@ try:
 except ImportError:
     from urllib import parse as urlparse
 
+import json
 import math
+import yaml
 from collections import defaultdict, namedtuple
 from copy import copy
 from gevent import monkey
@@ -132,7 +134,8 @@ ARGS = [
         'flags': ['-n', '--requests'],
         'options': {
             'help': 'Number of requests',
-            'type': int
+            'type': int,
+            'default': 1
         }
     },
     {
@@ -156,8 +159,28 @@ ARGS = [
             'help': 'Allow insecure SSL connections',
             'action': 'store_true',
         }
+    },
+    {
+        'flags': ['-f', '--from-file'],
+        'options': {
+            'help': (
+                'Read pamameters from a yaml file. '
+                'Take precedence over all values. '
+            ),
+            'metavar': 'YAML_FILE'
+        }
     }
 ]
+SCENARIO_REQUIRED = (
+    'name',
+    'route',
+    'content_type',
+    'method',
+    'insecure',
+    'quiet',
+    'concurrency',
+    'requests'
+)
 
 
 class RunResults(object):
@@ -237,7 +260,7 @@ def print_stats(results):
 
     print('')
     print('-------- Results --------')
-
+    print('')
     print('Successful calls\t\t%r' % stats.count)
     print('Total time        \t\t%.4f s  ' % stats.total_time)
     print('Average           \t\t%.4f s  ' % stats.avg)
@@ -255,10 +278,18 @@ def print_stats(results):
     else:
         print('BSI              \t\t:(')
     print('')
-    print('-------- Status codes --------')
+    print('-------- Status --------')
+    percentage = 0
     for code, items in results.status_code_counter.items():
-        print('Code %d          \t\t%d times.' % (code, len(items)))
+        num_result = len(items)
+        print('Code %d          \t\t%d times.' % (code, num_result))
+        if code == 200:
+            percentage = num_result / stats.count * 100
+    print('Percentage of Success\t\t%.1f ' % (percentage))
     print('')
+
+
+def print_legend():
     print('-------- Legend --------')
     print('RPS: Request Per Second')
     print('BSI: Boom Speed Index')
@@ -288,9 +319,29 @@ def print_errors(errors):
 
 def print_json(results):
     """Prints a JSON representation of the results to stdout."""
-    import json
     stats = calc_stats(results)
     print(json.dumps(stats._asdict()))
+
+
+def print_info(scenario):
+
+    print('')
+    print(
+        '-------- Scenario: %s --------' % (
+            scenario['description'] or scenario['name']
+        )
+    )
+    print('')
+    print('Target            \t\t%s' % scenario['target'])
+    print('Content-Type      \t\t%s' % scenario['content_type'])
+    print('Method            \t\t%s' % scenario['method'])
+    print('Payload           \t\t%d' % len(json.dumps(scenario['data'])))
+    print('Concurrency       \t\t%d' % scenario['concurrency'])
+    print('Requests          \t\t%d' % scenario['requests'])
+    if scenario['duration']:
+        print('Max Duration       \t\t%d' % scenario['duration'])
+    print('Insecure          \t\t%s' % 'yes' if scenario['insecure'] else 'no')
+    print('')
 
 
 def onecall(method, url, results, **options):
@@ -422,7 +473,7 @@ def load(url, requests, concurrency, duration, method, data, content_type,
          auth, headers=None, pre_hook=None, post_hook=None, quiet=False,
          insecure=False):
     if not quiet:
-        print_server_info(url, method, headers=headers, verify=not insecure)
+        # print_server_info(url, method, headers=headers, verify=not insecure)
 
         if requests is not None:
             print('Running %d queries - concurrency %d' % (requests,
@@ -450,41 +501,98 @@ def _split(header):
     return header
 
 
-def cli(arguments=ARGS):
-    """Parse arguments an return a parser object."""
+def from_file(file_path):
+    """Handle from_file cli option."""
+    try:
+        with open(file_path) as yaml_file:
+            yml = yaml.load(yaml_file)
+    except FileNotFoundError as e:
+        print(str(e), file=sys.stderr)
+        exit(1)
+    try:
+        scenarii = yml['scenarii']
+    except KeyError:
+        print('Error missing scenarii in file', file=sys.stderr)
+        exit(1)
+    for scenario in scenarii:
+        for param in SCENARIO_REQUIRED:
+            try:
+                scenario[param]
+            except KeyError as e:
+                print(
+                    "Error: Missing parameter {}, scenario {}".format(
+                        str(e),
+                        scenario
+                    ),
+                    file=sys.stderr
+                )
+                exit(1)
+    return scenarii
+
+
+def cli(expect_args=ARGS):
+    """Parse arguments an return a args(Namespace) object."""
+
+    # Main container
+    args = argparse.Namespace()
 
     # Parsing arguments from cli.
     parser = argparse.ArgumentParser(
         description='Simple HTTP Load runner.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    for argument in arguments:
-        parser.add_argument(*argument['flags'], **argument['options'])
+    for arg in expect_args:
+        parser.add_argument(*arg['flags'], **arg['options'])
 
+    # REFACTOR: Put this in it's own function with a lookup dict.
     # Validate arguments.
     # TODO: print usage to stderr.
-    args = parser.parse_args()
-    if args.version:
+    parsed_args = parser.parse_args()
+    if parsed_args.version:
         print(__version__)
-        sys.exit(1)
-    if args.url is None:
-        print('You need to provide an URL.')
+        sys.exit(0)
+
+    if parsed_args.url is None:
+        print('You need to provide a BASE URL.')
         parser.print_usage()
         sys.exit(1)
-    if args.data is not None and args.method not in _DATA_VERBS:
-        print("You can't provide data with %r" % args.method)
-        parser.print_usage()
-        sys.exit(1)
-    if args.requests is None and args.duration is None:
-        args.requests = 1
-    if args.header is None:
+    args.url = parsed_args.url
+    args.json_output = parsed_args.json_output
+    args.pre_hook = parsed_args.pre_hook
+    args.post_hook = parsed_args.post_hook
+
+    if parsed_args.header is None:
         args.headers = {}
     else:
         try:
-            args.headers = dict([_split(header) for header in args.header])
+            args.headers = dict([_split(h) for h in parsed_args.header])
         except ValueError as e:
             print(str(e))
             parser.print_usage()
+
+    args.scenarii = []
+    if parsed_args.from_file is not None:
+        args.scenarii = from_file(parsed_args.from_file)
+    else:
+        if parsed_args.data is not None \
+         and parsed_args.method not in _DATA_VERBS:
+            print("You can't provide data with %r" % parsed_args.method)
+            parser.print_usage()
+            sys.exit(1)
+        args.scenarii.append({
+            'name': 'from cli',
+            'route': None,
+            'description': 'Scenario from cli arguments.',
+            'content_type': parsed_args.content_type,
+            'method': parsed_args.method,
+            'data': parsed_args.data,
+            'auth': parsed_args.auth,
+            'concurrency': parsed_args.concurrency,
+            'requests': parsed_args.requests,
+            'duration': parsed_args.duration,
+            'insecure': parsed_args.insecure,
+            'quiet': parsed_args.quiet
+        })
 
     # Return arguments.
     return args
@@ -504,22 +612,42 @@ def main():
     if original != resolved and 'Host' not in args.headers:
         args.headers['Host'] = original
 
-    try:
-        res = load(url, args.requests, args.concurrency, args.duration,
-                   args.method, args.data, args.content_type, args.auth,
-                   headers=args.headers, pre_hook=args.pre_hook,
-                   post_hook=args.post_hook,
-                   quiet=(args.json_output or args.quiet),
-                   insecure=args.insecure)
-    except RequestException as e:
-        print_errors((e, ))
-        sys.exit(1)
+    for scenario in args.scenarii:
+        scenario['target'] = url
+        if scenario['route'] is not None:
+            scenario['target'] = "{url}{route}".format(
+                url=url,
+                route=scenario['route']
+            )
+        if not args.json_output:
+            print_info(scenario)
+        try:
+            res = load(
+                scenario['target'],
+                scenario['requests'],
+                scenario['concurrency'],
+                scenario['duration'],
+                scenario['method'],
+                scenario['data'],
+                scenario['content_type'],
+                scenario['auth'],
+                headers=args.headers,
+                pre_hook=args.pre_hook,
+                post_hook=args.post_hook,
+                quiet=(args.json_output or scenario['quiet']),
+                insecure=scenario['insecure']
+            )
+        except RequestException as e:
+            print_errors((e, ))
+            sys.exit(1)
 
-    if not args.json_output:
+        if args.json_output:
+            # FIXME: Update print_json to handle this
+            print_json(scenario, res)
+            continue
         print_errors(res.errors)
         print_stats(res)
-    else:
-        print_json(res)
+    print_legend()
 
     logger.info('Bye!')
 
