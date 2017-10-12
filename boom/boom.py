@@ -161,7 +161,7 @@ ARGS = [
         }
     },
     {
-        'flags': ['-f', '--from-file'],
+        'flags': ['--from-file'],
         'options': {
             'help': (
                 'Read pamameters from a yaml file. '
