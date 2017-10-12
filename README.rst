@@ -1,5 +1,4 @@
 .. TODO: Change badges.
-.. TODO: Add editor config.
 .. TODO: Add setup.cfg.
 .. IDEA: Add support for loading data from json file.
 .. TODO: Add CONTRIBUTING to README.
