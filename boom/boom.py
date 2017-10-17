@@ -497,7 +497,7 @@ def load(url, requests, concurrency, duration, method, data, content_type,
     if data_file is not None:
         if data is not None:
             print("You can't use both data and data-file options")
-            exit(1)
+            sys.exit(1)
         data = load_data(data_file)
 
     if not quiet:
@@ -536,12 +536,12 @@ def from_file(file_path):
             yml = yaml.load(yaml_file)
     except FileNotFoundError as e:
         print(str(e), file=sys.stderr)
-        exit(1)
+        sys.exit(1)
     try:
         scenarii = yml['scenarii']
     except KeyError:
         print('Error missing scenarii in file', file=sys.stderr)
-        exit(1)
+        sys.exit(1)
     for scenario in scenarii:
         for param in SCENARIO_REQUIRED:
             try:
@@ -554,7 +554,7 @@ def from_file(file_path):
                     ),
                     file=sys.stderr
                 )
-                exit(1)
+                sys.exit(1)
     return scenarii
 
 
@@ -567,7 +567,7 @@ def load_data(data_file):
             data = json.load(df)
     except (FileNotFoundError, json.decoder.JSONDecodeError) as e:
         print(error_message.format(error=str(e)))
-        exit(1)
+        sys.exit(1)
     return data
 
 
