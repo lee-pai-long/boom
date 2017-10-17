@@ -169,6 +169,19 @@ ARGS = [
             ),
             'metavar': 'YAML_FILE'
         }
+    },
+    {
+        # TODO: Allow other format than json...
+        'flags': ['--data-file'],
+        'options': {
+            'help': (
+                'Read data from a json file. '
+                'Take precedence over --data flag. '
+                'File path can be either absolute, '
+                'or relative to current directory.'
+            ),
+            'metavar': 'DATA_FILE'
+        }
     }
 ]
 SCENARIO_REQUIRED = (
@@ -471,7 +484,14 @@ def resolve(url):
 
 def load(url, requests, concurrency, duration, method, data, content_type,
          auth, headers=None, pre_hook=None, post_hook=None, quiet=False,
-         insecure=False):
+         insecure=False, data_file=None):
+
+    if data_file is not None:
+        if data is not None:
+            print("You can't use both data and data-file options")
+            exit(1)
+        data = load_data(data_file)
+
     if not quiet:
         # print_server_info(url, method, headers=headers, verify=not insecure)
 
@@ -530,6 +550,19 @@ def from_file(file_path):
     return scenarii
 
 
+def load_data(data_file):
+    """Load data from file."""
+
+    error_message = "Error loading data from file: {error}"
+    try:
+        with open(data_file) as df:
+            data = json.load(df)
+    except (FileNotFoundError, json.decoder.JSONDecodeError) as e:
+        print(error_message.format(error=str(e)))
+        exit(1)
+    return data
+
+
 def cli(expect_args=ARGS):
     """Parse arguments an return a args(Namespace) object."""
 
@@ -574,8 +607,8 @@ def cli(expect_args=ARGS):
     if parsed_args.from_file is not None:
         args.scenarii = from_file(parsed_args.from_file)
     else:
-        if parsed_args.data is not None \
-         and parsed_args.method not in _DATA_VERBS:
+        given_data = load_data(parsed_args.data_file) or parsed_args.data
+        if given_data is not None and parsed_args.method not in _DATA_VERBS:
             print("You can't provide data with %r" % parsed_args.method)
             parser.print_usage()
             sys.exit(1)
@@ -585,7 +618,7 @@ def cli(expect_args=ARGS):
             'description': 'Scenario from cli arguments.',
             'content_type': parsed_args.content_type,
             'method': parsed_args.method,
-            'data': parsed_args.data,
+            'data': given_data,
             'auth': parsed_args.auth,
             'concurrency': parsed_args.concurrency,
             'requests': parsed_args.requests,
