@@ -227,10 +227,18 @@ class RunResults(object):
             sys.stdout.write('.')
             sys.stdout.flush()
 
-# REVIEW: Put elements in one line each.
 RunStats = namedtuple(
-    'RunStats', ['count', 'total_time', 'rps', 'avg', 'min',
-                 'max', 'amp', 'stdev'])
+    'RunStats', [
+        'count',
+        'total_time',
+        'rps',
+        'avg',
+        'min',
+        'max',
+        'amp',
+        'stdev'
+    ]
+)
 
 
 def calc_stats(results):
