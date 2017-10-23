@@ -182,7 +182,15 @@ ARGS = [
             ),
             'metavar': 'DATA_FILE'
         }
-    }
+    },
+    {
+        'flags': ['-s', '--sleep'],
+        'options': {
+            'help': 'Second to wait between requests',
+            'type': int,
+            'default': 5
+        }
+    },
 ]
 SCENARIO_REQUIRED = (
     'name',
@@ -491,17 +499,23 @@ def resolve(url):
 
 
 def load(url, requests, concurrency, duration, method, data, content_type,
-         auth, headers=None, pre_hook=None, post_hook=None, quiet=False,
-         insecure=False, data_file=None):
+         auth, sleep, headers=None, pre_hook=None, post_hook=None,
+         quiet=False, insecure=False, data_file=None):
 
+    num_run = 1
+    results = []
     if data_file is not None:
         if data is not None:
             print("You can't use both data and data-file options")
             sys.exit(1)
-        data = load_data(data_file)
+        data_from_file = load_data(data_file)
+
+        # If type is list each client get a dict.
+        if type(data) is list:
+            num_run = len(data)
 
     if not quiet:
-        # print_server_info(url, method, headers=headers, verify=not insecure)
+        print_server_info(url, method, headers=headers, verify=not insecure)
 
         if requests is not None:
             print('Running %d queries - concurrency %d' % (requests,
@@ -512,9 +526,25 @@ def load(url, requests, concurrency, duration, method, data, content_type,
 
         sys.stdout.write('Starting the load')
     try:
-        return run(url, requests, duration, method, data, auth,
-                   content_type, concurrency, headers, pre_hook, post_hook,
-                   quiet=quiet, insecure=insecure)
+        for i in range(num_run):
+            payload = data or json.dumps(data_from_file[i])
+            results.append(run(
+                url,
+                requests,
+                duration,
+                method,
+                payload,
+                auth,
+                content_type,
+                concurrency,
+                headers,
+                pre_hook,
+                post_hook,
+                quiet=quiet,
+                insecure=insecure
+            ))
+            time.sleep(sleep)
+        return results
     finally:
         if not quiet:
             print(' Done')
@@ -561,6 +591,8 @@ def from_file(file_path):
 def load_data(data_file):
     """Load data from file."""
 
+    if data_file is None:
+        return None
     error_message = "Error loading data from file: {error}"
     try:
         with open(data_file) as df:
@@ -597,10 +629,12 @@ def cli(expect_args=ARGS):
         print('You need to provide a BASE URL.')
         parser.print_usage()
         sys.exit(1)
+
     args.url = parsed_args.url
     args.json_output = parsed_args.json_output
     args.pre_hook = parsed_args.pre_hook
     args.post_hook = parsed_args.post_hook
+    args.sleep = parsed_args.sleep
 
     if parsed_args.header is None:
         args.headers = {}
@@ -663,7 +697,7 @@ def main():
         if not args.json_output:
             print_info(scenario)
         try:
-            res = load(
+            results = load(
                 scenario['target'],
                 scenario['requests'],
                 scenario['concurrency'],
@@ -672,22 +706,26 @@ def main():
                 scenario['data'],
                 scenario['content_type'],
                 scenario['auth'],
+                args.sleep,
                 headers=args.headers,
                 pre_hook=args.pre_hook,
                 post_hook=args.post_hook,
                 quiet=(args.json_output or scenario['quiet']),
-                insecure=scenario['insecure']
+                insecure=scenario['insecure'],
+                data_file=scenario.get('data_file', None),
             )
         except RequestException as e:
             print_errors((e, ))
             sys.exit(1)
 
         if args.json_output:
-            # FIXME: Update print_json to handle this
-            print_json(scenario, res)
+            # FIXME: Update print_json to handle this.
+            for res in results:
+                print_json(scenario, res)
             continue
-        print_errors(res.errors)
-        print_stats(res)
+        for res in results:
+            print_errors(res.errors)
+            print_stats(res)
     print_legend()
 
     logger.info('Bye!')
