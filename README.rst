@@ -1,6 +1,5 @@
 .. TODO: Change badges.
 .. TODO: Add setup.cfg.
-.. IDEA: Add support for loading data from json file.
 .. TODO: Add CONTRIBUTING to README.
 
 **Boom!** is a simple command line tool to send some load to a web app.
