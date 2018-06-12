@@ -6,3 +6,4 @@ venv/
 dist/
 .idea/
 .coverage
+.pytest_cache/
