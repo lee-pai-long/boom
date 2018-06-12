@@ -1,0 +1,22 @@
+[
+  "boom/tests/test_boom.py::TestBoom::test_basic_run",
+  "boom/tests/test_boom.py::TestBoom::test_connection_error",
+  "boom/tests/test_boom.py::TestBoom::test_dns_resolve",
+  "boom/tests/test_boom.py::TestBoom::test_json_output",
+  "boom/tests/test_boom.py::TestBoom::test_post_hook",
+  "boom/tests/test_boom.py::TestBoom::test_post_hook_fails",
+  "boom/tests/test_boom.py::TestBoom::test_pre_hook",
+  "boom/tests/test_boom.py::TestBoom::test_resolve",
+  "boom/tests/test_boom.py::TestBoom::test_resolve_no_scheme",
+  "boom/tests/test_boom.py::TestBoom::test_resolve_no_scheme_ssl",
+  "boom/tests/test_boom.py::TestBoom::test_ssl_resolve",
+  "boom/tests/test_boom.py::TestBoom::test_too_many_redirects",
+  "boom/tests/test_pgbar.py::DefaultsTestCase::test_full_progress",
+  "boom/tests/test_pgbar.py::DefaultsTestCase::test_increment",
+  "boom/tests/test_pgbar.py::DefaultsTestCase::test_initialization",
+  "boom/tests/test_pgbar.py::DefaultsTestCase::test_reset",
+  "boom/tests/test_pgbar.py::CustomizedTestCase::test_full_progress",
+  "boom/tests/test_pgbar.py::CustomizedTestCase::test_increment",
+  "boom/tests/test_pgbar.py::CustomizedTestCase::test_initialization",
+  "boom/tests/test_pgbar.py::CustomizedTestCase::test_reset"
+]
