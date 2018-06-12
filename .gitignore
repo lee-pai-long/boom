@@ -5,5 +5,5 @@ boom.egg-info/
 venv/
 dist/
 .idea/
-.coverage
+.coverage*
 .pytest_cache/
