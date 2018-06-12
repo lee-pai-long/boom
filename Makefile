@@ -82,10 +82,10 @@ pyenv: ## Install pyenv(python version manager).
 			xz-utils \
 			tk-dev \
 		&& curl -L https://goo.gl/YnAzjE | PYENV_ROOT=$(PYENV_ROOT) bash \
-		&& echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> $(BASH_RC) \
+		&& echo 'export PATH="${HOME}/.pyenv/bin:${PATH}"' >> $(BASHRC) \
 		&& echo 'eval "$(pyenv init -)"' >> $(BASH_RC) \
-		&& echo 'eval "$(pyenv virtualenv-init -)"' >> $(BASH_RC) \
-		&& source $(BASH_RC))
+		&& echo 'eval "$(pyenv virtualenv-init -)"' >> $(BASHRC) \
+		&& source $(BASHRC))
 
 .PHONY: python
 python: pyenv ## Install python version define in .python-version.
