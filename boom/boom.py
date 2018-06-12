@@ -603,10 +603,12 @@ def load_data(data_file):
     return data
 
 
-def cli(expect_args=ARGS):
+def cli(expected_args=None):
     """Parse arguments an return a args(Namespace) object."""
 
-    # Main container
+    expected_args = expected_args or ARGS
+
+    # Main container.
     args = argparse.Namespace()
 
     # Parsing arguments from cli.
@@ -614,7 +616,7 @@ def cli(expect_args=ARGS):
         description='Simple HTTP Load runner.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    for arg in expect_args:
+    for arg in expected_args:
         parser.add_argument(*arg['flags'], **arg['options'])
 
     # REFACTOR: Put this in it's own function with a lookup dict.
