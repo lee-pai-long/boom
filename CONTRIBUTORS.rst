@@ -1,7 +1,9 @@
-.. TODO: Add self.
-
 Owner
 =====
+- Lee Pai Long
+
+Original creator
+================
 
 - Tarek Ziade
 

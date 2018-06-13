@@ -1,5 +1,3 @@
-.. TODO: Add a Changeloger.
-
 History
 =======
 
