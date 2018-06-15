@@ -4,22 +4,6 @@
 
 **Boom!** is a simple command line tool to send some load to a web app.
 
-.. image:: https://img.shields.io/coveralls/tarekziade/boom.svg
-    :target: https://coveralls.io/r/tarekziade/boom
-
-.. image:: https://img.shields.io/travis/tarekziade/boom/master.svg
-    :target: https://travis-ci.org/tarekziade/boom
-
-.. image:: https://img.shields.io/pypi/v/boom.svg
-    :target: https://pypi.python.org/pypi/boom
-
-.. image:: https://img.shields.io/pypi/pyversions/boom.svg
-    :target: https://pypi.python.org/pypi/boom/
-
-.. image:: https://img.shields.io/pypi/dd/boom.svg
-    :target: https://pypi.python.org/pypi/boom/
-
-
 Boom! is a script you can use to quickly smoke-test your
 web app deployment. If you need a more complex tool,
 I'd suggest looking at `Funkload <http://funkload.nuxeo.org/>`_
@@ -88,47 +72,62 @@ Basic usage example: 100 queries with a maximum concurrency of
 Boom! has more options::
 
     $ boom --help
-    usage: boom [-h] [--version] [-m {GET,POST,DELETE,PUT,HEAD,OPTIONS}]
-                [--content-type CONTENT_TYPE] [-D DATA] [-c CONCURRENCY] [-a AUTH]
-                [--header HEADER] [--pre-hook PRE_HOOK] [--post-hook POST_HOOK]
-                [--json-output] [-n REQUESTS | -d DURATION]
-                [url]
+usage: boom [-h] [--version] [-m {GET,POST,DELETE,PUT,HEAD,OPTIONS}]
+            [--content-type CONTENT_TYPE] [-D DATA] [-c CONCURRENCY] [-a AUTH]
+            [-H HEADER] [--pre-hook PRE_HOOK] [--post-hook POST_HOOK]
+            [--json-output] [-q] [-n REQUESTS] [-d DURATION] [-k]
+            [--from-file YAML_FILE] [--data-file DATA_FILE] [-s SLEEP]
+            [url]
 
-    Simple HTTP Load runner.
+Simple HTTP Load runner.
 
-    positional arguments:
-      url                   URL to hit
+positional arguments:
+  url                   URL to hit. (default: None)
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --version             Displays version and exits.
-      -m {GET,POST,DELETE,PUT,HEAD,OPTIONS}, --method {GET,POST,DELETE,PUT,HEAD,OPTIONS}
-                            HTTP Method
-      --content-type CONTENT_TYPE
-                            Content-Type
-      -D DATA, --data DATA  Data. Prefixed by "py:" to point a python callable.
-      -c CONCURRENCY, --concurrency CONCURRENCY
-                            Concurrency
-      -a AUTH, --auth AUTH  Basic authentication user:password
-      --header HEADER       Custom header. name:value
-      --pre-hook PRE_HOOK   Python module path (eg: mymodule.pre_hook) to a
-                            callable which will be executed before doing a request
-                            for example: pre_hook(method, url, options). It must
-                            return a tuple of parameters given in function
-                            definition
-      --post-hook POST_HOOK
-                            Python module path (eg: mymodule.post_hook) to a
-                            callable which will be executed after a request is
-                            done for example: eg. post_hook(response). It must
-                            return a given response parameter or raise an
-                            `boom.boom.RequestException` for failed request.
-      --json-output         Prints the results in JSON instead of the default
-                            format
-      -n REQUESTS, --requests REQUESTS
-                            Number of requests
-      -d DURATION, --duration DURATION
-                            Duration in seconds
-      -k , --insecure       Allow insecure SSL connections
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             Displays version and exits. (default: False)
+  -m {GET,POST,DELETE,PUT,HEAD,OPTIONS}, --method {GET,POST,DELETE,PUT,HEAD,OPTIONS}
+                        One of GET, POST, DELETE, PUT, HEAD, OPTIONS.
+                        (default: GET)
+  --content-type CONTENT_TYPE
+                        Content-Type to use. (default: text/plain)
+  -D DATA, --data DATA  Data. Prefixed by "py:" to point a python callable.
+                        (default: None)
+  -c CONCURRENCY, --concurrency CONCURRENCY
+                        Number of client ot use (default: 1)
+  -a AUTH, --auth AUTH  Basic authentication user:password (default: None)
+  -H HEADER, --header HEADER
+                        Custom header. name:value (default: None)
+  --pre-hook PRE_HOOK   Python module path (eg: mymodule.pre_hook) to a
+                        callable which will be executed before doing a request
+                        for example: pre_hook(method, url, options). It must
+                        return a tuple of parameters given in function
+                        definition (default: None)
+  --post-hook POST_HOOK
+                        Python module path (eg: mymodule.post_hook) to a
+                        callable which will be executed after a request is
+                        done for example: eg. post_hook(response). It must
+                        return a given response parameter or raise an
+                        `boom.boom.RequestException` for failed request.
+                        (default: None)
+  --json-output         Prints the results in JSON. (default: False)
+  -q, --quiet           Don't display progress bar (default: False)
+  -n REQUESTS, --requests REQUESTS
+                        Number of requests (default: 1)
+  -d DURATION, --duration DURATION
+                        Duration in seconds. (default: None)
+  -k , --insecure       Allow insecure SSL connections (default: False)
+  --from-file YAML_FILE
+                        Read pamameters from a yaml file. Take precedence over
+                        all values. (default: None)
+  --data-file DATA_FILE
+                        Read data from a json file. Take precedence over
+                        --data flag. File path can be either absolute, or
+                        relative to current directory. (default: None)
+  -s SLEEP, --sleep SLEEP
+                        Second to wait between requests (default: 5)
+
 
 Calling from Python code
 ========================
@@ -147,8 +146,3 @@ queries.
 
 Using greenlets allows Boom to spawn large amounts of virtual users with very little
 resources. It's not a problem to spawn 1000 users and hammer a web application with them.
-
-If you are interested in this project, you are welcome to join the fun at
-https://github.com/tarekziade/boom
-
-Make sure to add yourself to the contributors list if your PR gets merged. And make sure it's in alphabetical order!
